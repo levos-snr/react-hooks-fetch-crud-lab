@@ -1,6 +1,10 @@
 import React, { useState } from "react";
 
-function QuestionForm(props) {
+
+
+function QuestionForm(onAddQuestion) {
+
+  //usestate hook to handle the form data state
   const [formData, setFormData] = useState({
     prompt: "",
     answer1: "",
@@ -10,16 +14,40 @@ function QuestionForm(props) {
     correctIndex: 0,
   });
 
+  //handleChange function to update formdata state when input values change
   function handleChange(event) {
     setFormData({
       ...formData,
       [event.target.name]: event.target.value,
     });
   }
-
+//handle form submission
   function handleSubmit(event) {
+    const baseUrl = 'http://localhost:4000/questions';
     event.preventDefault();
-    console.log(formData);
+//constract a new question object in the expected format
+const newQuestion ={
+  prompt: formData.prompt,
+  answers:[formData.answer1,formData.answer2, formData.answer3,formData.answer4],
+  correctIndex:parseInt(formData.correctIndex, 10)
+}
+
+//send post request to the api to create a new question
+    fetch(baseUrl, {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(newQuestion)
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
+      .then(newQuestion => onAddQuestion(newQuestion)) // Call the prop function
+      .catch(error => console.error('Submit error', error));
   }
 
   return (
